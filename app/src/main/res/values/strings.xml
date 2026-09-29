@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PC Keyboard</string>
+    <string name="ime_name">PC Keyboard</string>
+    <string name="enable_keyboard">Увімкни клавіатуру в налаштуваннях системи</string>
+    <string name="open_settings">Відкрити налаштування клавіатур</string>
+</resources>
