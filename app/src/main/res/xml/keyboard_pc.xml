@@ -7,7 +7,7 @@
 
     <!-- Row 0: Esc + F1-F12 -->
     <Row>
-        <Key android:codes="111" android:keyLabel="Esc" android:keyWidth="8%p"/>
+        <Key android:codes="-9" android:keyLabel="Esc" android:keyWidth="8%p"/>
         <Key android:codes="131" android:keyLabel="F1" android:keyWidth="7%p"/>
         <Key android:codes="132" android:keyLabel="F2" android:keyWidth="7%p"/>
         <Key android:codes="133" android:keyLabel="F3" android:keyWidth="7%p"/>
