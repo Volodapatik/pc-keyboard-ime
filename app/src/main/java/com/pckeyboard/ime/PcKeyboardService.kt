@@ -44,19 +44,19 @@ class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
             }
-            // Custom modifiers (we used negative codes)
-            -6 -> { /* Ctrl – just visual for now */ }
+            // Custom modifiers
+            -6 -> { /* Ctrl */ }
             -7 -> { /* Alt */ }
             -8 -> { /* Win */ }
-            // Function keys & navigation
-            in 131..142 -> { // F1–F12
+            -9 -> { // Esc
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ESCAPE))
+                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ESCAPE))
+            }
+            // Function keys F1–F12
+            in 131..142 -> {
                 val fKey = KeyEvent.KEYCODE_F1 + (primaryCode - 131)
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, fKey))
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, fKey))
-            }
-            111 -> { // Esc
-                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ESCAPE))
-                ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ESCAPE))
             }
             19 -> sendKey(ic, KeyEvent.KEYCODE_DPAD_UP)
             20 -> sendKey(ic, KeyEvent.KEYCODE_DPAD_DOWN)
@@ -65,7 +65,7 @@ class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
             else -> {
                 var code = primaryCode
                 if (caps && code in 97..122) {
-                    code -= 32 // to upper
+                    code -= 32
                 }
                 ic.commitText(code.toChar().toString(), 1)
             }
