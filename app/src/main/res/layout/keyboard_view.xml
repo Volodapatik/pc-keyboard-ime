@@ -4,12 +4,11 @@
     android:id="@+id/keyboard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
     android:keyBackground="@drawable/key_bg"
     android:keyTextColor="#FFFFFF"
-    android:keyTextSize="16sp"
+    android:keyTextSize="15sp"
     android:background="#1E1E1E"
     android:shadowColor="#000000"
     android:shadowRadius="0.0"
-    android:paddingTop="4dp"
-    android:paddingBottom="4dp" />
+    android:paddingTop="6dp"
+    android:paddingBottom="8dp" />
