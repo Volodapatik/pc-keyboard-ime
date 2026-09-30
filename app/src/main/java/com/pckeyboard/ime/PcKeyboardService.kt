@@ -5,8 +5,11 @@ import android.inputmethodservice.Keyboard
 import android.inputmethodservice.KeyboardView
 import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import android.view.inputmethod.InputMethodManager
+import android.os.Build
 
 class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionListener {
 
@@ -27,12 +30,35 @@ class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
         keyboardView?.keyboard = currentKeyboard
         keyboardView?.setOnKeyboardActionListener(this)
         keyboardView?.isPreviewEnabled = false
+
+        // Extra bottom padding so keys don't go under system navigation bar
+        val navHeight = getNavBarHeight()
+        keyboardView?.setPadding(0, 6, 0, navHeight + 8)
+
         return keyboardView!!
+    }
+
+    private fun getNavBarHeight(): Int {
+        val resources = resources
+        val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else 48
+    }
+
+    override fun onComputeInsets(outInsets: Insets) {
+        super.onComputeInsets(outInsets)
+        val view = keyboardView ?: return
+        // Tell the system the visible content ends at the top of our keyboard
+        outInsets.contentTopInsets = view.top
+        outInsets.visibleTopInsets = view.top
+        outInsets.touchableInsets = Insets.TOUCHABLE_INSETS_CONTENT
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         keyboardView?.keyboard = currentKeyboard
+        // Re-apply padding in case nav bar height changed (gesture vs 3-button)
+        val navHeight = getNavBarHeight()
+        keyboardView?.setPadding(0, 6, 0, navHeight + 8)
     }
 
     private fun switchLanguage() {
@@ -46,6 +72,11 @@ class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
         currentKeyboard?.isShifted = false
         keyboardView?.keyboard = currentKeyboard
         keyboardView?.invalidateAllKeys()
+    }
+
+    private fun showImePicker() {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.showInputMethodPicker()
     }
 
     override fun onKey(primaryCode: Int, keyCodes: IntArray?) {
@@ -64,7 +95,8 @@ class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER))
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER))
             }
-            -10 -> switchLanguage() // Language switch
+            -10 -> switchLanguage()          // EN / UK / RU
+            -11 -> showImePicker()           // 🌐 switch keyboard app (like Gboard)
             -6 -> { /* Ctrl */ }
             -7 -> { /* Alt */ }
             -8 -> { /* Win */ }
@@ -72,7 +104,7 @@ class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ESCAPE))
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ESCAPE))
             }
-            in 131..142 -> { // F1–F12
+            in 131..142 -> {
                 val fKey = KeyEvent.KEYCODE_F1 + (primaryCode - 131)
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, fKey))
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, fKey))
@@ -83,15 +115,8 @@ class PcKeyboardService : InputMethodService(), KeyboardView.OnKeyboardActionLis
             22 -> sendKey(ic, KeyEvent.KEYCODE_DPAD_RIGHT)
             else -> {
                 var code = primaryCode
-                // Latin a-z
-                if (caps && code in 97..122) {
-                    code -= 32
-                }
-                // Cyrillic lowercase → uppercase (rough range)
-                if (caps && code in 1072..1103) {
-                    code -= 32
-                }
-                // Ukrainian special: і (1110), є (1108)
+                if (caps && code in 97..122) code -= 32
+                if (caps && code in 1072..1103) code -= 32
                 if (caps && code == 1110) code = 1030 // І
                 if (caps && code == 1108) code = 1028 // Є
                 if (caps && code == 1101) code = 1069 // Э
